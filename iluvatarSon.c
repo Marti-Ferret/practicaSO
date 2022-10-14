@@ -1,5 +1,37 @@
 #include "iluvatarSon.h"
 
+void controlC(void){
+	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
+	signal(SIGINT, SIG_DFL);
+    raise(SIGINT);
+
+
+}
+
+char * read_untilEnter(int fd, char caracter, int i) {
+    char * buffer = NULL;
+
+    while (caracter != '\n' || i == 0) {
+        read(fd, & caracter, sizeof(char));
+
+  
+        if (buffer == NULL) {
+            buffer = (char * ) malloc(1 * sizeof(char));
+        } else {
+            buffer = (char * ) realloc(buffer, i + 1);
+        }
+        buffer[i] = caracter;
+
+  
+        if (caracter == '\n' || caracter == '\0') {
+            buffer[i] = '\0';
+            return buffer;
+        }
+        i++;
+    }
+
+    return buffer;
+}
 
 char* read_until(int fd, char end) {
      int i = 0, size;
@@ -48,17 +80,97 @@ Config llegirConfig(Config config, char *nomF){
 	return config;
 }
 
+int validarComanda (int numParaules, char **arrayComanda){
+	
+	if(strcasecmp(arrayComanda[0],"UPDATE")== 0){
+		if(numParaules == 2){
+			if(strcasecmp(arrayComanda[1],"USERS") == 0){
+				return 0;
+			}
+		}
+
+
+	}else if(strcasecmp(arrayComanda[0],"LIST") == 0){
+		if(numParaules == 2){
+			if(strcasecmp(arrayComanda[1],"USERS") == 0){
+				return 0;
+			}
+		}
+
+	}else if(strcasecmp(arrayComanda[0],"EXIT")==0){
+		if(numParaules == 1){
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int gestionarComanda(){
+	char * comanda;
+	char * (* arrayComanda);
+	int numParaules=0;
+	int correcte;
+	int i=0;
+
+	escriure("$ ");
+
+	comanda = read_untilEnter(STDIN_FILENO, '\n', 0);
+	
+	if (comanda[0] == '\0') {
+        free(comanda);
+        return 0;
+    }
+		
+	arrayComanda = (char **) malloc(sizeof(char *));
+    arrayComanda[i] = strtok(comanda, " ");
+
+	while(arrayComanda[i] != NULL){
+    	numParaules++;
+    	arrayComanda= realloc(arrayComanda, (numParaules +1) * sizeof(char * ));
+		arrayComanda[++i] = strtok(NULL, " ");
+	}
+	
+	correcte = validarComanda(numParaules,arrayComanda);
+
+	if(correcte == 0){
+		if(strcasecmp(arrayComanda[0],"UPDATE") == 0){
+			escriure("Update\n");
+
+		}else if(strcasecmp(arrayComanda[0],"LIST") == 0){
+			escriure("List\n");
+		}else if(strcasecmp(arrayComanda[0],"EXIT") == 0){
+			raise(SIGINT);
+		}
+
+
+	}
+
+	return 0;
+}
 
 int main(int argc, char ** argv){
 	Config config;
+	char* buffer;
+	int comanda = 0;
 
 	if(argc != 2){
 		escriure("ERROR, falta el fitxer de configuració\n");
 		return -1;
 	}else{
-		
+
+		signal(SIGINT, (void * ) controlC);		
 		config = llegirConfig(config,argv[1]);	
-		printf("%s %s %s %d %s %d",config.nom,config.directori,config.ipS,config.portS,config.ipC,config.portC);		
+		printf("%s %s %s %d %s %d",config.nom,config.directori,config.ipS,config.portS,config.ipC,config.portC);
+
+		asprintf(&buffer,"Welcome %s, son of Iluvatar\n",config.nom);
+		escriure(buffer);
+		free(buffer);
+
+		while(comanda == 0){
+			comanda = gestionarComanda();
+		}
+
+		raise(SIGINT);
 	}
 
 }
