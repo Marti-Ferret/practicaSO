@@ -101,7 +101,16 @@ int validarComanda (int numParaules, char **arrayComanda){
 		if(numParaules == 1){
 			return 0;
 		}
+	}else if(strcasecmp(arrayComanda[0],"SEND")==0){
+		if(numParaules == 2){
+			if(strcasecmp(arrayComanda[1],"MSG") == 0){
+				return 0;
+			}else if(strcasecmp(arrayComanda[1],"FILE") == 0){
+				return 0;
+			}
+		}
 	}
+
 	return 1;
 }
 
@@ -140,11 +149,32 @@ int gestionarComanda(){
 			escriure("List\n");
 		}else if(strcasecmp(arrayComanda[0],"EXIT") == 0){
 			raise(SIGINT);
+		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"MSG") == 0){
+			escriure("Send MSG\n");
+		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"FILE") == 0){
+			escriure("Send FILE\n");
 		}
 
+	}else if(correcte == 1){
+		int pid;
+		
+		pid = fork();
+		if(pid < 0){
+			escriure("Error al crear el fork");
+			exit(1);
+		}else if(pid == 0){
+			if(execvp(arrayComanda[0],arrayComanda) < 0){
+				escriure("Aquesta comanda no existeix\n");
+				free(arrayComanda);
+				free(comanda);
+			}
+		}else{
+			wait(NULL);
+			free(arrayComanda);
+			free(comanda);
+		}
 
 	}
-
 	return 0;
 }
 
