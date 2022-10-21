@@ -8,6 +8,15 @@ void controlC(void){
 
 }
 
+char* controlNom(char *caracter, size_t length){
+	char *aux;
+	for(int i=0; i<(int)length; i++){
+		if(caracter[i]!='&'){
+			aux[i]=caracter[i];
+		}
+	}
+	return aux;
+}
 char * read_untilEnter(int fd, char caracter, int i) {
     char * buffer = NULL;
 
@@ -61,6 +70,7 @@ Config llegirConfig(Config config, char *nomF){
 
 	if(fd != 0){
 		config.nom = read_until(fd,'\n');
+		strcpy(config.nom,controlNom(config.nom,sizeof config.nom));
 		config.directori = read_until(fd,'\n');
 		config.ipS = read_until(fd,'\n');
 		config.portS = atoi(read_until(fd,'\n'));
