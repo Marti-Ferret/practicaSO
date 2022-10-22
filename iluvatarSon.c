@@ -5,34 +5,24 @@ void controlC(void){
 	signal(SIGINT, SIG_DFL);
     raise(SIGINT);
 
-
 }
 
-char* controlNom(char *caracter, size_t length){
-	char *aux;
-	for(int i=0; i<(int)length; i++){
-		if(caracter[i]!='&'){
-			aux[i]=caracter[i];
-		}
-	}
-	return aux;
-}
-char * read_untilEnter(int fd, char caracter, int i) {
+char *read_untilEnter(int fd, char character, int i) {
     char * buffer = NULL;
 
-    while (caracter != '\n' || i == 0) {
-        read(fd, & caracter, sizeof(char));
+    while (character != '\n' || i == 0) {
+        read(fd, &character, sizeof(char));
 
-  
+
         if (buffer == NULL) {
             buffer = (char * ) malloc(1 * sizeof(char));
         } else {
             buffer = (char * ) realloc(buffer, i + 1);
         }
-        buffer[i] = caracter;
+        buffer[i] = character;
 
-  
-        if (caracter == '\n' || caracter == '\0') {
+
+        if (character == '\n' || character == '\0') {
             buffer[i] = '\0';
             return buffer;
         }
@@ -42,7 +32,7 @@ char * read_untilEnter(int fd, char caracter, int i) {
     return buffer;
 }
 
-char* read_until(int fd, char end) {
+char *read_until(int fd, char character) {
      int i = 0, size;
       char c = '\0';
       char* string = (char*)malloc(sizeof(char));
@@ -50,7 +40,7 @@ char* read_until(int fd, char end) {
      while (1) {
           size = read(fd, &c, sizeof(char));
 
-          if (c != end && size > 0) {
+          if (c != character && size > 0) {
               string = (char*)realloc(string, sizeof(char) * (i + 2));
               string[i++] = c;
           } else {
@@ -58,19 +48,40 @@ char* read_until(int fd, char end) {
           }
       }
 
- 		string[i] = '\0';
- 	return string;
- }
+             	string[i] = '\0';
+        return string;
+}
+
+char *validarNom(char *nom){
+	int i=0,j=0;
+	
+	char *aux = (char*)malloc(sizeof(char));
+	
+	while(nom[j] != '\0'){
+		
+		if(nom[j] != '&'){
+			aux = (char*) realloc(aux,sizeof(char) * (i+2));
+			aux[i++] = nom[j];
+
+		}
+		
+		j++;
+	}
+	aux[i] = '\0';
+	return aux;
+
+}
 
 
 Config llegirConfig(Config config, char *nomF){
 	int fd;
+	char *nom;
 
 	fd=open(nomF,O_RDONLY);
 
 	if(fd != 0){
-		config.nom = read_until(fd,'\n');
-		strcpy(config.nom,controlNom(config.nom,sizeof config.nom));
+		nom = read_until(fd,'\n');
+		config.nom = validarNom(nom);
 		config.directori = read_until(fd,'\n');
 		config.ipS = read_until(fd,'\n');
 		config.portS = atoi(read_until(fd,'\n'));
@@ -85,7 +96,7 @@ Config llegirConfig(Config config, char *nomF){
 				
 
 	}
-
+	free(nom);
 	close(fd);
 	return config;
 }
@@ -121,7 +132,7 @@ int validarComanda (int numParaules, char **arrayComanda){
 		}
 	}
 
-	return 1;
+	return 2;
 }
 
 int gestionarComanda(){
@@ -157,15 +168,29 @@ int gestionarComanda(){
 
 		}else if(strcasecmp(arrayComanda[0],"LIST") == 0){
 			escriure("List\n");
+
 		}else if(strcasecmp(arrayComanda[0],"EXIT") == 0){
+			free(comanda);
+			free(arrayComanda);
 			raise(SIGINT);
+
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"MSG") == 0){
 			escriure("Send MSG\n");
+
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"FILE") == 0){
 			escriure("Send FILE\n");
 		}
 
+		free(comanda);
+		free(arrayComanda);
+		return 0;
+
 	}else if(correcte == 1){
+		free(comanda);
+		free(arrayComanda);
+		return 0;
+
+	}else{
 		int pid;
 		
 		pid = fork();
@@ -175,17 +200,16 @@ int gestionarComanda(){
 		}else if(pid == 0){
 			if(execvp(arrayComanda[0],arrayComanda) < 0){
 				escriure("Aquesta comanda no existeix\n");
-				free(arrayComanda);
-				free(comanda);
+				
 			}
 		}else{
 			wait(NULL);
 			free(arrayComanda);
 			free(comanda);
 		}
-
+		return 0;
 	}
-	return 0;
+	
 }
 
 int main(int argc, char ** argv){
@@ -200,8 +224,6 @@ int main(int argc, char ** argv){
 
 		signal(SIGINT, (void * ) controlC);		
 		config = llegirConfig(config,argv[1]);	
-		printf("%s %s %s %d %s %d",config.nom,config.directori,config.ipS,config.portS,config.ipC,config.portC);
-
 		asprintf(&buffer,"Welcome %s, son of Iluvatar\n",config.nom);
 		escriure(buffer);
 		free(buffer);
@@ -211,6 +233,7 @@ int main(int argc, char ** argv){
 		}
 
 		raise(SIGINT);
+		
 	}
 
 }
