@@ -169,6 +169,29 @@ int gestionarComanda(){
 	
 }
 
+void connectarServidor(Config config){
+	
+	int socketFD;
+	struct sockaddr_in servidor;
+
+	if( (socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
+    escriure("Error creant el socket\n");
+  }
+
+  bzero(&servidor, sizeof(servidor));
+  servidor.sin_family = AF_INET;
+  servidor.sin_port = htons(config.portS);
+
+  if(inet_pton(AF_INET, config.ipS, &servidor.sin_addr) < 0){
+    escriure("Error configurant IP\n");
+  }
+
+  if(connect(socketFD, (struct sockaddr*) &servidor, sizeof(servidor)) < 0){
+    escriure("Error fent el connect\n");
+  }
+
+}
+
 int main(int argc, char ** argv){
 	Config config;
 	char* buffer;
@@ -180,7 +203,8 @@ int main(int argc, char ** argv){
 	}else{
 
 		signal(SIGINT, (void * ) controlC);		
-		config = llegirConfig(config,argv[1]);	
+		config = llegirConfig(config,argv[1]);
+		connectarServidor(config);
 		asprintf(&buffer,"Welcome %s, son of Iluvatar\n",config.nom);
 		escriure(buffer);
 		free(buffer);
@@ -188,6 +212,7 @@ int main(int argc, char ** argv){
 		while(comanda == 0){
 			comanda = gestionarComanda();
 		}
+		
 
 		raise(SIGINT);
 		

@@ -30,8 +30,39 @@ Config llegirConfig(Config config, char *nomF){
 
 }
 
+int configSocket(Config config){
+
+	struct sockaddr_in servidor;	
+	int listenFD;
+
+	if( (listenFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
+        escriure("Error creant el socket\n");
+	}
+	
+	bzero(&servidor, sizeof(servidor));
+    servidor.sin_port = htons(config.port);
+    servidor.sin_family = AF_INET;
+	servidor.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if(bind(listenFD, (struct sockaddr*) &servidor, sizeof(servidor)) < 0){
+    	escriure("Error fent el bind\n");
+    }
+
+	if(listen(listenFD, 10) < 0){
+    	escriure("Error fent el listen\n");
+    }
+
+	return listenFD;
+}
+
+void funcions(int clientFD){
+	escriure("Nou client\n");
+	printf("%d",clientFD);
+}
+
 int main(int argc, char *agrv[]){
 	Config config;
+	int clientFD,listenFD;
 
 	if(argc != 2){
 		escriure("Error, falten fichers\n");
@@ -42,10 +73,11 @@ int main(int argc, char *agrv[]){
 	
 	escriure("\nARDA SERVER\n");
 	config = llegirConfig(config,agrv[1]);
-/*
-	while(1){
-		
+	listenFD = configSocket(config);
 
-	}
-*/	
+	while(1){
+		escriure("Waiting for connections...");
+		clientFD = accept(listenFD,(struct sockaddr*) NULL, NULL);
+		funcions(clientFD);
+	}	
 }
