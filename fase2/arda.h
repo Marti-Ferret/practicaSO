@@ -24,3 +24,5 @@ typedef struct {
 	char *directori;
 
 }Config;
+
+

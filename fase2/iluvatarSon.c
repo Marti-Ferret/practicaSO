@@ -35,7 +35,7 @@ Config llegirConfig(Config config, char *nomF){
 
 	fd=open(nomF,O_RDONLY);
 
-	if(fd != 0){
+	if(fd >= 0){
 		nom = read_until(fd,'\n');
 		config.nom = validarNom(nom);
 		config.directori = read_until(fd,'\n');
@@ -63,6 +63,8 @@ int validarComanda (int numParaules, char **arrayComanda){
 		if(numParaules == 2){
 			if(strcasecmp(arrayComanda[1],"USERS") == 0){
 				return 0;
+			}else{
+				return 1;
 			}
 		}
 
@@ -142,6 +144,7 @@ int gestionarComanda(){
 		return 0;
 
 	}else if(correcte == 1){
+		escriure("Aquesta comanda existeix pero falten parametres\n");
 		free(comanda);
 		free(arrayComanda);
 		return 0;
@@ -156,7 +159,7 @@ int gestionarComanda(){
 		}else if(pid == 0){
 			if(execvp(arrayComanda[0],arrayComanda) < 0){
 				escriure("Aquesta comanda no existeix\n");
-				
+				exit(EXIT_FAILURE);				
 				
 			}
 		}else{

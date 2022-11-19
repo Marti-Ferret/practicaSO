@@ -55,10 +55,14 @@ int configSocket(Config config){
 	return listenFD;
 }
 
-void funcions(int clientFD){
-	escriure("Nou client\n");
-	printf("%d",clientFD);
+void * threadClients(void *clientFD){
+	
+	int fd = *((int*) clientFD);
+
+
+
 }
+
 
 int main(int argc, char *agrv[]){
 	Config config;
@@ -78,6 +82,10 @@ int main(int argc, char *agrv[]){
 	while(1){
 		escriure("Waiting for connections...");
 		clientFD = accept(listenFD,(struct sockaddr*) NULL, NULL);
-		funcions(clientFD);
-	}	
+
+		pthread_t threadClient;
+		pthread_create( &threadClients, NULL, threadClients, &clientFD);
+	}
+
+	raise(SIGINT);
 }
