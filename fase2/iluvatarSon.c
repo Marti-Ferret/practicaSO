@@ -1,6 +1,7 @@
 #include "iluvatarSon.h"
 #include "reads.h"
 
+
 void controlC(void){
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
 	signal(SIGINT, SIG_DFL);
@@ -35,7 +36,7 @@ Config llegirConfig(Config config, char *nomF){
 
 	fd=open(nomF,O_RDONLY);
 
-	if(fd >= 0){
+	if(fd != 0){
 		nom = read_until(fd,'\n');
 		config.nom = validarNom(nom);
 		config.directori = read_until(fd,'\n');
@@ -63,7 +64,7 @@ int validarComanda (int numParaules, char **arrayComanda){
 		if(numParaules == 2){
 			if(strcasecmp(arrayComanda[1],"USERS") == 0){
 				return 0;
-			}else{
+			}else {
 				return 1;
 			}
 		}
@@ -144,7 +145,6 @@ int gestionarComanda(){
 		return 0;
 
 	}else if(correcte == 1){
-		escriure("Aquesta comanda existeix pero falten parametres\n");
 		free(comanda);
 		free(arrayComanda);
 		return 0;
@@ -159,7 +159,7 @@ int gestionarComanda(){
 		}else if(pid == 0){
 			if(execvp(arrayComanda[0],arrayComanda) < 0){
 				escriure("Aquesta comanda no existeix\n");
-				exit(EXIT_FAILURE);				
+				
 				
 			}
 		}else{
@@ -172,7 +172,7 @@ int gestionarComanda(){
 	
 }
 
-void connectarServidor(Config config){
+int connectarServidor(Config config){
 	
 	int socketFD;
 	struct sockaddr_in servidor;
@@ -192,13 +192,15 @@ void connectarServidor(Config config){
   if(connect(socketFD, (struct sockaddr*) &servidor, sizeof(servidor)) < 0){
     escriure("Error fent el connect\n");
   }
-
+return socketFD;
 }
 
 int main(int argc, char ** argv){
 	Config config;
+	//Usuaris usuari;
 	char* buffer;
 	int comanda = 0;
+	int fdClient;
 
 	if(argc != 2){
 		escriure("ERROR, falta el fitxer de configuració\n");
@@ -207,7 +209,9 @@ int main(int argc, char ** argv){
 
 		signal(SIGINT, (void * ) controlC);		
 		config = llegirConfig(config,argv[1]);
-		connectarServidor(config);
+		fdClient = connectarServidor(config);
+		write(fdClient,config.nom,strlen(config.nom));
+		write(fdClient,config.ipC,strlen(config.ipC));
 		asprintf(&buffer,"Welcome %s, son of Iluvatar\n",config.nom);
 		escriure(buffer);
 		free(buffer);

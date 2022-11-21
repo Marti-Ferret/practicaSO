@@ -1,11 +1,13 @@
 #include "arda.h"
 #include "reads.h"
 
+
 void controlC(void){
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
 	signal(SIGINT, SIG_DFL);
     raise(SIGINT);
 }
+
 
 Config llegirConfig(Config config, char *nomF){
 	int fd;
@@ -58,8 +60,13 @@ int configSocket(Config config){
 void * threadClients(void *clientFD){
 	
 	int fd = *((int*) clientFD);
+	char *buffer;
 
+	buffer = read_until(fd,'\n');
+	escriure(buffer);
+	free(buffer);
 
+	return NULL;
 
 }
 
@@ -84,7 +91,7 @@ int main(int argc, char *agrv[]){
 		clientFD = accept(listenFD,(struct sockaddr*) NULL, NULL);
 
 		pthread_t threadClient;
-		pthread_create( &threadClients, NULL, threadClients, &clientFD);
+		pthread_create( &threadClient, NULL, threadClients, &clientFD);
 	}
 
 	raise(SIGINT);

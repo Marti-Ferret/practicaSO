@@ -27,3 +27,12 @@ typedef struct {
 	int portC;
 
 }Config;
+
+typedef struct { 
+	char *nom;
+	char *ip;
+	int port;
+	char *servidor;
+	int pid;
+
+}Usuaris;
