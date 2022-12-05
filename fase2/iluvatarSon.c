@@ -1,7 +1,12 @@
 #include "iluvatarSon.h"
 #include "reads.h"
 
+int fdSocket;
+Usuaris *usuaris;
+int totalUsuaris=0;
 
+void llegirUsuaris(int totalUsuaris);
+void llistarUsuaris();
 void controlC(void){
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
 	signal(SIGINT, SIG_DFL);
@@ -123,12 +128,16 @@ int gestionarComanda(){
 
 	if(correcte == 0){
 		if(strcasecmp(arrayComanda[0],"UPDATE") == 0){
-			escriure("Update\n");
+			write(fdSocket,"U",sizeof(char));
+			read(fdSocket,&totalUsuaris,sizeof(int));
+			llegirUsuaris(totalUsuaris);
+			escriure("Users list updated\n");
 
 		}else if(strcasecmp(arrayComanda[0],"LIST") == 0){
-			escriure("List\n");
+			llistarUsuaris();
 
 		}else if(strcasecmp(arrayComanda[0],"EXIT") == 0){
+			write(fdSocket,"S",sizeof(char));
 			free(comanda);
 			free(arrayComanda);
 			raise(SIGINT);
@@ -178,30 +187,89 @@ int connectarServidor(Config config){
 	struct sockaddr_in servidor;
 
 	if( (socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
-    escriure("Error creant el socket\n");
-  }
+    	escriure("Error creant el socket\n");
+  	}
 
-  bzero(&servidor, sizeof(servidor));
-  servidor.sin_family = AF_INET;
-  servidor.sin_port = htons(config.portS);
+  	bzero(&servidor, sizeof(servidor));
+  	servidor.sin_family = AF_INET;
+  	servidor.sin_port = htons(config.portS);
 
-  if(inet_pton(AF_INET, config.ipS, &servidor.sin_addr) < 0){
-    escriure("Error configurant IP\n");
-  }
+  	if(inet_pton(AF_INET, config.ipS, &servidor.sin_addr) < 0){
+    	escriure("Error configurant IP\n");
+  	}
 
-  if(connect(socketFD, (struct sockaddr*) &servidor, sizeof(servidor)) < 0){
-    escriure("Error fent el connect\n");
-  }
-return socketFD;
+  	if(connect(socketFD, (struct sockaddr*) &servidor, sizeof(servidor)) < 0){
+    	escriure("Error fent el connect\n");
+	}
+	return socketFD;
+}
+
+void llistarUsuaris(){
+	int i;
+	char *buffer;
+
+	asprintf(&buffer,"There are %d children of Iluvatar connected:\n",totalUsuaris);
+	escriure(buffer);
+	free(buffer);
+
+	for(i=0; i<totalUsuaris; i++){
+		asprintf(&buffer,"%d. %s\t%s\t%d\t%d\n",i+1,usuaris[i].nom,usuaris[i].ip,usuaris[i].port,usuaris[i].pid);
+		escriure(buffer);
+		free(buffer);
+
+
+	}
+
+}
+
+void enviarInfo(Config config){
+	int pid;
+	
+	pid = getpid();
+
+	write(fdSocket,config.nom,strlen(config.nom));
+	write(fdSocket,"\n",sizeof(char));
+	write(fdSocket,config.ipC,strlen(config.ipC));
+	write(fdSocket,"\n",sizeof(char));
+	write(fdSocket,&config.portC,sizeof(int));
+	write(fdSocket,&pid,sizeof(int));
+
+}
+
+void llegirUsuaris(int totalUsuaris){
+	
+	int i;
+	char *nom, *ip;
+	int port,pid;
+	usuaris = (Usuaris*) malloc (sizeof(Usuaris) * totalUsuaris);
+
+	for(i=0;i<totalUsuaris;i++){
+		nom = read_until(fdSocket,'\n');
+		ip = read_until(fdSocket,'\n');
+		read(fdSocket,&port,sizeof(int));
+		read(fdSocket,&pid,sizeof(int));
+
+		usuaris[i].nom = (char *) malloc ((strlen(nom)+1) * sizeof(char));
+		usuaris[i].ip = (char *) malloc ((strlen(ip)+1) * sizeof(char));
+
+		strcpy(usuaris[i].nom,nom);
+		strcpy(usuaris[i].ip,ip);
+		usuaris[i].port = port;
+		usuaris[i].pid = pid;
+		
+		
+		free(nom);
+		free(ip);
+	}
+
+
 }
 
 int main(int argc, char ** argv){
 	Config config;
-	//Usuaris usuari;
 	char* buffer;
 	int comanda = 0;
-	int fdClient;
-
+	
 	if(argc != 2){
 		escriure("ERROR, falta el fitxer de configuració\n");
 		return -1;
@@ -209,9 +277,11 @@ int main(int argc, char ** argv){
 
 		signal(SIGINT, (void * ) controlC);		
 		config = llegirConfig(config,argv[1]);
-		fdClient = connectarServidor(config);
-		write(fdClient,config.nom,strlen(config.nom));
-		write(fdClient,config.ipC,strlen(config.ipC));
+		fdSocket = connectarServidor(config);
+		enviarInfo(config);
+		read(fdSocket,&totalUsuaris,sizeof(int));
+		llegirUsuaris(totalUsuaris);	
+
 		asprintf(&buffer,"Welcome %s, son of Iluvatar\n",config.nom);
 		escriure(buffer);
 		free(buffer);
