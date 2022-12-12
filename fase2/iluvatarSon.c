@@ -14,6 +14,34 @@ void controlC(void){
 
 }
 
+/**
+void enviarMissatge(char *nomDest, char *msg){
+	
+}
+*/
+int comprobarNom(char *nom){
+	int i,correcte=0;
+	for(i=0; i<totalUsuaris; i++){
+		if(strcasecmp(nom,usuaris[i].nom)==0){
+			correcte=1;
+		}
+	}
+	return correcte;
+}
+
+void enviarMissatge(){
+	char *buffer;
+	int i;
+	for(i=0; i<totalUsuaris; i++){
+		asprintf(&buffer,"%d. %s\t%s\t%d\t%d\n",i+1,usuaris[i].nom,usuaris[i].ip,usuaris[i].port,usuaris[i].pid);
+		escriure(buffer);
+		free(buffer);
+
+
+	}
+
+}
+
 char *validarNom(char *nom){
 	int i=0,j=0;
 	
@@ -87,7 +115,7 @@ int validarComanda (int numParaules, char **arrayComanda){
 			return 0;
 		}
 	}else if(strcasecmp(arrayComanda[0],"SEND")==0){
-		if(numParaules == 2){
+		if(numParaules == 4){
 			if(strcasecmp(arrayComanda[1],"MSG") == 0){
 				return 0;
 			}else if(strcasecmp(arrayComanda[1],"FILE") == 0){
@@ -143,7 +171,12 @@ int gestionarComanda(){
 			raise(SIGINT);
 
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"MSG") == 0){
-			escriure("Send MSG\n");
+			if(comprobarNom(arrayComanda[2])==1){
+					escriure("CORRECTE");
+			}else{
+				escriure("User not found in the list\n");
+			}
+			
 
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"FILE") == 0){
 			escriure("Send FILE\n");
@@ -167,7 +200,7 @@ int gestionarComanda(){
 			exit(1);
 		}else if(pid == 0){
 			if(execvp(arrayComanda[0],arrayComanda) < 0){
-				escriure("Aquesta comanda no existeix\n");
+				escriure("Unknown command\n");
 				
 				
 			}
