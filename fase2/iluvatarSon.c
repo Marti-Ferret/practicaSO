@@ -9,6 +9,8 @@ void llegirUsuaris(int totalUsuaris);
 void llistarUsuaris();
 void controlC(void){
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
+	write(fdSocket,"S",sizeof(char));
+	free(usuaris);
 	signal(SIGINT, SIG_DFL);
     raise(SIGINT);
 
@@ -33,15 +35,15 @@ int comprobarNom(char *nom){
 	}
 	return correcte;
 }
-/**
+
 void enviarMissatge(char *buffer){
-	
+		
 }
 
-void rebreMissatge(){
+//void rebreMissatge(){
 
-}
-*/
+//}
+
 
 char *validarNom(char *nom){
 	int i=0,j=0;
@@ -174,7 +176,7 @@ int gestionarComanda(){
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"MSG") == 0){
 			if(comprobarNom(arrayComanda[2])==1){
 				if(comprobarMissatge(arrayComanda[3])==0){
-					//enviarMissatge(arrayComanda[3]);
+					enviarMissatge(arrayComanda[3],arrayComanda[2]);
 				}
 			}else{
 				escriure("User not found in the list\n");

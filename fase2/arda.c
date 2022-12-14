@@ -88,43 +88,37 @@ void afegirUsuari(char* nom, char* ip, int port,int pid, int fd){
 	usuaris[totalUsuaris-1].fd = fd;
 }
 
-///////////////////////////// Aixó no funciona, audio whats
 void eliminarUsuari(int fd){
-	Usuaris *usuarisCopia;
-	usuarisCopia = (Usuaris *) malloc (sizeof(Usuaris) * totalUsuaris -1);
-
-	for(int i=0; i<totalUsuaris; i++){
-		if(usuaris[i].fd != fd){
-			usuarisCopia[i].nom = (char *) malloc ((strlen(usuaris[i].nom) +1) * sizeof(char));
-			usuarisCopia[i].ip = (char *) malloc ((strlen(usuaris[i].ip) +1) * sizeof(char));
-
-			strcpy(usuarisCopia[i].nom,usuaris[i].nom);
-			strcpy(usuarisCopia[i].ip,usuaris[i].ip);
-			usuarisCopia[i].port = usuaris[i].port;
-			usuarisCopia[i].pid = usuaris[i].pid;
-			usuarisCopia[i].fd = usuaris[i].fd;
-			
+	int pos;
+	
+	if(totalUsuaris > 0){
+		for(int i=0; i<totalUsuaris; i++){
+			if(usuaris[i].fd == fd){
+				pos = i;
+			}
 		}
 
-	}
+		for(int i=pos; i<totalUsuaris-1; i++){
+			usuaris[i].nom = (char *) malloc ((strlen(usuaris[i+1].nom)+1) * sizeof(char));
+			usuaris[i].ip = (char *) malloc ((strlen(usuaris[i+1].ip) +1) *sizeof(char));
 
-	for(int i=0;i<totalUsuaris; i++){
-		escriure(usuarisCopia[i].nom);
 
-	}
-	
-	totalUsuaris--;
+			strcpy(usuaris[i].nom,usuaris[i+1].nom);
+			strcpy(usuaris[i].ip,usuaris[i+1].ip);
+			usuaris[i].port = usuaris[i+1].port;
+			usuaris[i].fd = usuaris[i+1].fd;
+			usuaris[i].pid = usuaris[i+1].pid;
+
+		}
+
+		totalUsuaris--;
 		
-	usuaris = (Usuaris *) realloc (usuaris, ((totalUsuaris) * sizeof(Usuaris)));
+		usuaris = (Usuaris *) realloc (usuaris, ((totalUsuaris) * sizeof(Usuaris)));
+	
+	
+	}else{
+		usuaris = (Usuaris *) realloc(usuaris, ((0) *sizeof(Usuaris)));
 
-	for(int i=0; i<totalUsuaris; i++){
-		memcpy(usuaris[i].nom,usuarisCopia[i].nom,strlen(usuarisCopia[i].nom)+1);
-		memcpy(usuaris[i].ip,usuarisCopia[i].ip,strlen(usuarisCopia[i].ip)+1);
-		usuaris[i].port = usuarisCopia[i].port;
-		usuaris[i].pid = usuarisCopia[i].pid;
-		usuaris[i].fd = usuarisCopia[i].fd;
-
-		escriure(usuaris[i].nom);
 	}
 }
 
