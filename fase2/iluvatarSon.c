@@ -14,11 +14,16 @@ void controlC(void){
 
 }
 
-/**
-void enviarMissatge(char *nomDest, char *msg){
-	
+int comprobarMissatge(char *msg){
+	int size = strlen(msg);
+	int correcte = 0;
+	if(msg[0]!='"' || msg[size -1]!='"'){
+		escriure("El format del missatge no es correcte\n");
+		correcte = 1;
+	}
+	return correcte;
 }
-*/
+
 int comprobarNom(char *nom){
 	int i,correcte=0;
 	for(i=0; i<totalUsuaris; i++){
@@ -28,19 +33,15 @@ int comprobarNom(char *nom){
 	}
 	return correcte;
 }
+/**
+void enviarMissatge(char *buffer){
+	
+}
 
-void enviarMissatge(){
-	char *buffer;
-	int i;
-	for(i=0; i<totalUsuaris; i++){
-		asprintf(&buffer,"%d. %s\t%s\t%d\t%d\n",i+1,usuaris[i].nom,usuaris[i].ip,usuaris[i].port,usuaris[i].pid);
-		escriure(buffer);
-		free(buffer);
-
-
-	}
+void rebreMissatge(){
 
 }
+*/
 
 char *validarNom(char *nom){
 	int i=0,j=0;
@@ -172,7 +173,9 @@ int gestionarComanda(){
 
 		}else if(strcasecmp(arrayComanda[0],"SEND") == 0 && strcasecmp(arrayComanda[1],"MSG") == 0){
 			if(comprobarNom(arrayComanda[2])==1){
-					escriure("CORRECTE");
+				if(comprobarMissatge(arrayComanda[3])==0){
+					//enviarMissatge(arrayComanda[3]);
+				}
 			}else{
 				escriure("User not found in the list\n");
 			}
