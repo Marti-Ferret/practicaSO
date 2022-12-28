@@ -10,7 +10,7 @@ arda.o: arda.c arda.h reads.h
 	gcc -c arda.c -Wall -Wextra -lpthread
 
 iluvatarSon: iluvatarSon.o	reads.o
-	gcc iluvatarSon.o reads.o -o iluvatarSon -Wall -Wextra
+	gcc iluvatarSon.o reads.o -o iluvatarSon -Wall -Wextra -lpthread
 
 arda: arda.o	reads.o
 	gcc arda.o reads.o -o arda -Wall -Wextra -lpthread

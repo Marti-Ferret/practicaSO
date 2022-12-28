@@ -103,10 +103,25 @@ Config llegirConfig(Config config, char *nomF)
 	return config;
 }
 
+void *esperarMissatge(void *arg){
+	char *name = (char *)malloc(sizeof(char));
+	name = strdup(arg);
+	escriure("EL NOMBRE ES ");
+	escriure(name);
+	free(name);
+
+	
+	return NULL;
+}
+
+
 int enviarMissatge(char *nom, char *msg)
 {
 	struct hostent *host_info;
 	char *ip = (char *)malloc(sizeof(char));
+
+	pthread_t t1;
+
 
 	for (int i = 0; i < totalUsuaris; i++)
 	{
@@ -128,13 +143,17 @@ int enviarMissatge(char *nom, char *msg)
 	}
 
 	escriure(host_info->h_name);
+
+	pthread_create(&t1,NULL,esperarMissatge,host_info->h_name);
+
+
 	free(ip);
 	return 1;
 }
 
 int validarComanda(int numParaules, char **arrayComanda)
 {
-
+ 
 	if (strcasecmp(arrayComanda[0], "UPDATE") == 0)
 	{
 		if (numParaules == 2)
