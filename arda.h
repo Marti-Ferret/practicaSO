@@ -14,18 +14,13 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 
 #define escriure(x) write(1, x, strlen(x))
 
 typedef struct
 {
-	char *nom;
+	char *ip;
+	int port;
 	char *directori;
-	char *ipS;
-	int portS;
-	char *ipC;
-	int portC;
 
 } Config;
