@@ -145,11 +145,28 @@ int connectarSocketMsg(int port, char *ip)
 	return socketFD;
 }
 
-int enviarMissatge(char *nom, char *msg)
-{
+//funcio que li pasarás la comanda
+//ajuntarà en un mateix buffer tot el missatge
+//retorna el buffer del missatge que envia al usuari
+char *crearMissatge(char *comanda){
+	char *buffer;
+	//falta per fer la logica 
+	return buffer;
+}
+
+//li passo la comanda sencera per poder tenir tot el missatge
+int enviarMissatge(char *comanda){
+	
 	struct hostent *host_info;
 	char *ip = (char *)malloc(sizeof(char));
+	char *nom = (char *)malloc(sizeof(char));
+	char *msg = (char *)malloc(sizeof(char));
 	int fdClient, port;
+	// a la posició 2 hi ha el nom del destinatari
+	nom= strdup(comanda[2]);
+
+
+	msg= enviarMissatge(comanda);
 
 	for (int i = 0; i < totalUsuaris; i++)
 	{
@@ -191,7 +208,6 @@ int enviarMissatge(char *nom, char *msg)
 	free(ip);
 	return 1;
 }
-
 int validarComanda(int numParaules, char **arrayComanda)
 {
 
@@ -310,7 +326,7 @@ int gestionarComanda()
 			{
 				if (comprobarMissatge(arrayComanda[3]) == 0)
 				{
-					enviat = enviarMissatge(arrayComanda[2], arrayComanda[3]);
+					enviat = enviarMissatge(arrayComanda);
 
 					if (enviat == 1)
 					{
