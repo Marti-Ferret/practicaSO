@@ -14,6 +14,7 @@ typedef struct
 	int pid;
 	int fd;
 	char *servidor;
+	int fdMsg;
 } Usuaris;
 
 char *read_untilEnter(int fd, char character, int i);

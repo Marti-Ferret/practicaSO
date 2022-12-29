@@ -4,6 +4,7 @@
 int fdSocket;
 Usuaris *usuaris;
 int totalUsuaris = 0;
+Config config;
 
 void llegirUsuaris(int totalUsuaris);
 void llistarUsuaris();
@@ -49,10 +50,6 @@ int comprobarNom(char *nom)
 	return correcte;
 }
 
-// void rebreMissatge(){
-
-//}
-
 char *validarNom(char *nom)
 {
 	int i = 0, j = 0;
@@ -75,7 +72,7 @@ char *validarNom(char *nom)
 	return aux;
 }
 
-Config llegirConfig(Config config, char *nomF)
+void llegirConfig(char *nomF)
 {
 	int fd;
 	char *nom;
@@ -100,28 +97,40 @@ Config llegirConfig(Config config, char *nomF)
 		exit(0);
 	}
 	close(fd);
-	return config;
 }
 
-void *esperarMissatge(void *arg){
-	char *name = (char *)malloc(sizeof(char));
-	name = strdup(arg);
-	escriure("EL NOMBRE ES ");
-	escriure(name);
-	free(name);
+int connectarSocketMsg(int port, char *ip)
+{
 
-	
-	return NULL;
+	int socketFD;
+	struct sockaddr_in servidor;
+
+	if ((socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+	{
+		escriure("Error creant el socket\n");
+	}
+
+	bzero(&servidor, sizeof(servidor));
+	servidor.sin_family = AF_INET;
+	servidor.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, ip, &servidor.sin_addr) < 0)
+	{
+		escriure("Error configurant IP\n");
+	}
+
+	if (connect(socketFD, (struct sockaddr *)&servidor, sizeof(servidor)) < 0)
+	{
+		escriure("Error fent el connectAAA\n");
+	}
+	return socketFD;
 }
-
 
 int enviarMissatge(char *nom, char *msg)
 {
 	struct hostent *host_info;
 	char *ip = (char *)malloc(sizeof(char));
-
-	pthread_t t1;
-
+	int fdClient, port;
 
 	for (int i = 0; i < totalUsuaris; i++)
 	{
@@ -129,6 +138,7 @@ int enviarMissatge(char *nom, char *msg)
 		if (strcasecmp(nom, usuaris[i].nom) == 0)
 		{
 			ip = strdup(usuaris[i].ip);
+			port = usuaris[i].port;
 		}
 	}
 	host_info = gethostbyname(ip);
@@ -142,18 +152,25 @@ int enviarMissatge(char *nom, char *msg)
 		return 0;
 	}
 
-	escriure(host_info->h_name);
+	if (strcasecmp(ip, config.ipC) != 0)
+	{
 
-	pthread_create(&t1,NULL,esperarMissatge,host_info->h_name);
-
-
+		fdClient = connectarSocketMsg(port, ip);
+		write(fdClient, config.nom, strlen(config.nom));
+		write(fdClient, "\n", sizeof(char));
+		write(fdClient, config.ipC, strlen(config.ipC));
+		write(fdClient, "\n", sizeof(char));
+		write(fdClient, msg, strlen(msg));
+		write(fdClient, "\n", sizeof(char));
+	}
+	close(fdClient);
 	free(ip);
 	return 1;
 }
 
 int validarComanda(int numParaules, char **arrayComanda)
 {
- 
+
 	if (strcasecmp(arrayComanda[0], "UPDATE") == 0)
 	{
 		if (numParaules == 2)
@@ -273,6 +290,7 @@ int gestionarComanda()
 
 					if (enviat == 1)
 					{
+						escriure("\nMessage correctly sent\n\n");
 					}
 				}
 			}
@@ -326,7 +344,7 @@ int gestionarComanda()
 	}
 }
 
-int connectarServidor(Config config)
+int connectarServidor()
 {
 
 	int socketFD;
@@ -350,6 +368,7 @@ int connectarServidor(Config config)
 	{
 		escriure("Error fent el connect\n");
 	}
+
 	return socketFD;
 }
 
@@ -414,10 +433,67 @@ void llegirUsuaris(int totalUsuaris)
 	}
 }
 
+int configSocketMsg()
+{
+	char *buffer;
+	struct sockaddr_in servidor;
+	int listenFD;
+
+	if ((listenFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+	{
+		escriure("Error creant el socket\n");
+	}
+
+	bzero(&servidor, sizeof(servidor));
+	servidor.sin_port = htons(config.portC);
+	servidor.sin_family = AF_INET;
+	servidor.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (bind(listenFD, (struct sockaddr *)&servidor, sizeof(servidor)) < 0)
+	{
+		escriure("Error fent el bind\n");
+	}
+
+	if (listen(listenFD, 10) < 0)
+	{
+		escriure("Error fent el listen\n");
+	}
+
+	asprintf(&buffer, "\nPort:------%d------\n", config.portC);
+	escriure(buffer);
+	free(buffer);
+
+	return listenFD;
+}
+
+void *esperarMissatges()
+{
+	int listenFD, clientFD;
+
+	listenFD = configSocketMsg();
+
+	while (1)
+	{
+		char *nom, *ip, *msg;
+		char *buffer;
+		clientFD = accept(listenFD, (struct sockaddr *)NULL, NULL);
+
+		nom = read_until(clientFD, '\n');
+		ip = read_until(clientFD, '\n');
+		msg = read_until(clientFD, '\n');
+		asprintf(&buffer, "\n\nNew message recived!\n%s, from %s says:\n%s\n\n$", nom, ip, msg);
+		escriure(buffer);
+		free(buffer);
+		free(nom);
+		free(ip);
+		free(msg);
+	}
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
-
-	Config config;
+	pthread_t thread;
 	char *buffer;
 	int comanda = 0;
 
@@ -428,10 +504,17 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+		llegirConfig(argv[1]);
+		int resultat = pthread_create(&thread, NULL, esperarMissatges, NULL);
 
+		if (resultat != 0)
+		{
+			escriure("Error al crear el thread\n");
+			exit(0);
+		}
 		signal(SIGINT, (void *)controlC);
-		config = llegirConfig(config, argv[1]);
-		fdSocket = connectarServidor(config);
+
+		fdSocket = connectarServidor();
 		enviarInfo(config);
 		read(fdSocket, &totalUsuaris, sizeof(int));
 		llegirUsuaris(totalUsuaris);
