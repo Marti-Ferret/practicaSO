@@ -76,6 +76,8 @@ void llegirConfig(char *nomF)
 {
 	int fd;
 	char *nom;
+	char *directoriTemp;
+	int size;
 
 	fd = open(nomF, O_RDONLY);
 
@@ -83,11 +85,26 @@ void llegirConfig(char *nomF)
 	{
 		nom = read_until(fd, '\n');
 		config.nom = validarNom(nom);
-		config.directori = read_until(fd, '\n');
+		directoriTemp = read_until(fd, '\n');
 		config.ipS = read_until(fd, '\n');
 		config.portS = atoi(read_until(fd, '\n'));
 		config.ipC = read_until(fd, '\n');
 		config.portC = atoi(read_until(fd, '\n'));
+
+		size = strlen(directoriTemp);
+		config.directori = (char *)malloc(sizeof(char) * size);
+		memset(config.directori, 0, size * sizeof(char));
+
+		for (int i = 1; directoriTemp[i] != '\0'; i++)
+		{
+			config.directori[i - 1] = directoriTemp[i];
+		}
+
+		struct stat st = {0};
+		if (stat(config.directori, &st) == -1)
+		{
+			mkdir(config.directori, 0700);
+		}
 	}
 	else
 	{
@@ -96,6 +113,8 @@ void llegirConfig(char *nomF)
 		close(fd);
 		exit(0);
 	}
+
+	free(directoriTemp);
 	close(fd);
 }
 
@@ -162,6 +181,11 @@ int enviarMissatge(char *nom, char *msg)
 		write(fdClient, "\n", sizeof(char));
 		write(fdClient, msg, strlen(msg));
 		write(fdClient, "\n", sizeof(char));
+	}
+	else
+	{
+
+		// Mateixa maquina fer pipes o cues
 	}
 	close(fdClient);
 	free(ip);

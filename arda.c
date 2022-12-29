@@ -15,6 +15,8 @@ void controlC(void)
 Config llegirConfig(Config config, char *nomF)
 {
 	int fd;
+	char *directoriTemp;
+	int size;
 
 	fd = open(nomF, O_RDONLY);
 
@@ -23,7 +25,22 @@ Config llegirConfig(Config config, char *nomF)
 		escriure("Reading configuration file\n");
 		config.ip = read_until(fd, '\n');
 		config.port = atoi(read_until(fd, '\n'));
-		config.directori = read_until(fd, '\n');
+		directoriTemp = read_until(fd, '\n');
+
+		size = strlen(directoriTemp);
+		config.directori = (char *)malloc(sizeof(char) * size);
+		memset(config.directori, 0, size * sizeof(char));
+
+		for (int i = 1; directoriTemp[i] != '\0'; i++)
+		{
+			config.directori[i - 1] = directoriTemp[i];
+		}
+
+		struct stat st = {0};
+		if (stat(config.directori, &st) == -1)
+		{
+			mkdir(config.directori, 0700);
+		}
 	}
 	else
 	{
