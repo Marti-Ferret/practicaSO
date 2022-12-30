@@ -25,16 +25,37 @@ void controlC(void)
 	raise(SIGINT);
 }
 
-int comprobarMissatge(char *msg)
+int comprobarMissatge(char **arrayComanda, int numParaules)
 {
-	int size = strlen(msg);
-	int correcte = 0;
-	if (msg[0] != '"' || msg[size - 1] != '"')
+	int size, sizeParaula;
+
+	if (numParaules > 4)
 	{
-		escriure("El format del missatge no es correcte\n");
-		correcte = 1;
+		size = strlen(arrayComanda[numParaules - 1]);
+		if (arrayComanda[3][0] == '"' && arrayComanda[numParaules - 1][size - 1] == '"')
+		{
+
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
 	}
-	return correcte;
+	else
+	{
+		sizeParaula = strlen(arrayComanda[3]);
+		if (arrayComanda[3][0] == '"' && arrayComanda[3][sizeParaula - 1] == '"')
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	return 1;
 }
 
 int comprobarNom(char *nom)
@@ -145,28 +166,35 @@ int connectarSocketMsg(int port, char *ip)
 	return socketFD;
 }
 
-//funcio que li pasarás la comanda
-//ajuntarà en un mateix buffer tot el missatge
-//retorna el buffer del missatge que envia al usuari
-char *crearMissatge(char *comanda){
+char *generarMissatge(int numParaules, char **arrayComanda)
+{
 	char *buffer;
-	//falta per fer la logica 
-	return buffer;
+	char *msg;
+	int tamanyLletres = 0;
+	for (int i = 3; i < numParaules; i++)
+	{
+
+		for (int j = 0; arrayComanda[i][j] != '\0'; j++)
+		{
+			tamanyLletres++;
+		}
+	}
+
+	tamanyLletres = tamanyLletres + numParaules - 4;
+
+	msg = (char *)malloc(sizeof(char) * tamanyLletres);
+
+	// Falta ficar el contingut de **arrayComandes dintre de msg, sabem que el total de lletres es= tamanyLletres i el de paraules  a numParaules
 }
 
-//li passo la comanda sencera per poder tenir tot el missatge
-int enviarMissatge(char *comanda){
-	
+int enviarMissatge(char *nom, int numParaules, char **arrayComanda)
+{
 	struct hostent *host_info;
 	char *ip = (char *)malloc(sizeof(char));
-	char *nom = (char *)malloc(sizeof(char));
-	char *msg = (char *)malloc(sizeof(char));
+	char *msg;
 	int fdClient, port;
-	// a la posició 2 hi ha el nom del destinatari
-	nom= strdup(comanda[2]);
 
-
-	msg= enviarMissatge(comanda);
+	msg = generarMissatge(numParaules, arrayComanda);
 
 	for (int i = 0; i < totalUsuaris; i++)
 	{
@@ -183,7 +211,6 @@ int enviarMissatge(char *comanda){
 	{
 		escriure("Error al enviar el missatge");
 		free(host_info);
-		escriure(msg);
 		free(ip);
 		return 0;
 	}
@@ -208,6 +235,7 @@ int enviarMissatge(char *comanda){
 	free(ip);
 	return 1;
 }
+
 int validarComanda(int numParaules, char **arrayComanda)
 {
 
@@ -244,7 +272,7 @@ int validarComanda(int numParaules, char **arrayComanda)
 	}
 	else if (strcasecmp(arrayComanda[0], "SEND") == 0)
 	{
-		if (numParaules == 4)
+		if (numParaules >= 4)
 		{
 			if (strcasecmp(arrayComanda[1], "MSG") == 0)
 			{
@@ -324,9 +352,9 @@ int gestionarComanda()
 		{
 			if (comprobarNom(arrayComanda[2]) == 1)
 			{
-				if (comprobarMissatge(arrayComanda[3]) == 0)
+				if (comprobarMissatge(arrayComanda, numParaules) == 0)
 				{
-					enviat = enviarMissatge(arrayComanda);
+					enviat = enviarMissatge(arrayComanda[2], numParaules, arrayComanda);
 
 					if (enviat == 1)
 					{
