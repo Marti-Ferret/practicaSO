@@ -1,5 +1,15 @@
 #include "reads.h"
 
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 char *read_untilEnter(int fd, char character, int i)
 {
     char *buffer = NULL;
@@ -28,6 +38,16 @@ char *read_untilEnter(int fd, char character, int i)
 
     return buffer;
 }
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 char *read_until(int fd, char character)
 {

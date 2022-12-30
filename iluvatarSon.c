@@ -9,6 +9,16 @@ Config config;
 void llegirUsuaris(int totalUsuaris);
 void llistarUsuaris();
 
+
+/******************************************************************
+ * 
+ * @Nom: controlC
+ * @Finalitat: LLibera la memoria dle usuari que es desconecta del programa
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void controlC(void)
 {
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
@@ -24,6 +34,16 @@ void controlC(void)
 	signal(SIGINT, SIG_DFL);
 	raise(SIGINT);
 }
+
+
+/******************************************************************
+ * 
+ * @Nom: comprobarMissatge
+ * @Finalitat: Comproba si el format del missatge es e correcte o no
+ * @Parametres: char **arrayComanda : el argv del main, int paraules: el numero de paraules que hi ha al argv
+ * @Retorn: Retorna 1 o 0 si el format és el correcte o no 
+ * 
+ * *****************************************************************/
 
 int comprobarMissatge(char **arrayComanda, int numParaules)
 {
@@ -58,6 +78,16 @@ int comprobarMissatge(char **arrayComanda, int numParaules)
 	return 1;
 }
 
+
+/******************************************************************
+ * 
+ * @Nom: comprobarNom
+ * @Finalitat: comprobar que el nom del usuari destinatari existeix o no 
+ * @Parametres: char nom: nom a comprobar
+ * @Retorn: retorna 1 o 0 si el nom existeix o no
+ * 
+ * *****************************************************************/
+
 int comprobarNom(char *nom)
 {
 	int i, correcte = 0;
@@ -70,6 +100,16 @@ int comprobarNom(char *nom)
 	}
 	return correcte;
 }
+
+
+/******************************************************************
+ * 
+ * @Nom: validarNom
+ * @Finalitat: validar el nom del usuari del fitxer de configuració
+ * @Parametres: char nom: Nom a comprobar
+ * @Retorn: retorna el nom del usuari
+ * 
+ * *****************************************************************/
 
 char *validarNom(char *nom)
 {
@@ -92,6 +132,16 @@ char *validarNom(char *nom)
 	free(nom);
 	return aux;
 }
+
+
+/******************************************************************
+ * 
+ * @Nom:llegirConfig
+ * @Finalitat: llegir la configuració del usuari del seu fitxer
+ * @Parametres: char nomF: nom del file de configuració
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 void llegirConfig(char *nomF)
 {
@@ -139,6 +189,17 @@ void llegirConfig(char *nomF)
 	close(fd);
 }
 
+
+
+/******************************************************************
+ * 
+ * @Nom: connectarSocketMsg
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 int connectarSocketMsg(int port, char *ip)
 {
 
@@ -166,10 +227,20 @@ int connectarSocketMsg(int port, char *ip)
 	return socketFD;
 }
 
-char *generarMissatge(int numParaules, char **arrayComanda)
-{
-	char *buffer;
-	char *msg;
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
+char *generarMissatge(int numParaules, char **arrayComanda){
+	//char *buffer;
+	//char *msg;
 	int tamanyLletres = 0;
 	for (int i = 3; i < numParaules; i++)
 	{
@@ -182,10 +253,21 @@ char *generarMissatge(int numParaules, char **arrayComanda)
 
 	tamanyLletres = tamanyLletres + numParaules - 4;
 
-	msg = (char *)malloc(sizeof(char) * tamanyLletres);
+	//msg = (char *)malloc(sizeof(char) * tamanyLletres);
 
 	// Falta ficar el contingut de **arrayComandes dintre de msg, sabem que el total de lletres es= tamanyLletres i el de paraules  a numParaules
 }
+ 
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int enviarMissatge(char *nom, int numParaules, char **arrayComanda)
 {
@@ -235,6 +317,17 @@ int enviarMissatge(char *nom, int numParaules, char **arrayComanda)
 	free(ip);
 	return 1;
 }
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int validarComanda(int numParaules, char **arrayComanda)
 {
@@ -287,6 +380,18 @@ int validarComanda(int numParaules, char **arrayComanda)
 
 	return 2;
 }
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int gestionarComanda()
 {
@@ -412,6 +517,19 @@ int gestionarComanda()
 	}
 }
 
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 int connectarServidor()
 {
 
@@ -440,6 +558,17 @@ int connectarServidor()
 	return socketFD;
 }
 
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void llistarUsuaris()
 {
 	int i;
@@ -457,6 +586,19 @@ void llistarUsuaris()
 	}
 }
 
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void enviarInfo(Config config)
 {
 	int pid;
@@ -470,6 +612,19 @@ void enviarInfo(Config config)
 	write(fdSocket, &config.portC, sizeof(int));
 	write(fdSocket, &pid, sizeof(int));
 }
+
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 void llegirUsuaris(int totalUsuaris)
 {
@@ -500,6 +655,18 @@ void llegirUsuaris(int totalUsuaris)
 		free(ip);
 	}
 }
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int configSocketMsg()
 {
@@ -534,6 +701,18 @@ int configSocketMsg()
 	return listenFD;
 }
 
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void *esperarMissatges()
 {
 	int listenFD, clientFD;
@@ -558,6 +737,18 @@ void *esperarMissatges()
 	}
 	return NULL;
 }
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int main(int argc, char **argv)
 {

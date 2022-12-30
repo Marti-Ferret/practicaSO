@@ -5,12 +5,35 @@
 Usuaris *usuaris;
 int totalUsuaris = 0;
 
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void controlC(void)
 {
 	escriure("\nDisconnecting from Arda. See you soon, son of Iluvatar\n");
 	signal(SIGINT, SIG_DFL);
 	raise(SIGINT);
 }
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 Config llegirConfig(Config config, char *nomF)
 {
@@ -53,6 +76,17 @@ Config llegirConfig(Config config, char *nomF)
 	return config;
 }
 
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 int configSocket(Config config)
 {
 
@@ -82,6 +116,17 @@ int configSocket(Config config)
 	return listenFD;
 }
 
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 void enviarUsuaris(int fd)
 {
 	int i;
@@ -96,6 +141,17 @@ void enviarUsuaris(int fd)
 		write(fd, &usuaris[i].pid, sizeof(int));
 	}
 }
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 void afegirUsuari(char *nom, char *ip, int port, int pid, int fd)
 {
@@ -113,6 +169,17 @@ void afegirUsuari(char *nom, char *ip, int port, int pid, int fd)
 	usuaris[totalUsuaris - 1].pid = pid;
 	usuaris[totalUsuaris - 1].fd = fd;
 }
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 void eliminarUsuari(int fd)
 {
@@ -150,6 +217,18 @@ void eliminarUsuari(int fd)
 	}
 }
 
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
+
 int funcions(int fd, char opcio, char *nom)
 {
 	char *buffer;
@@ -181,6 +260,17 @@ int funcions(int fd, char opcio, char *nom)
 
 	return 0;
 }
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 void *threadClients(void *clientFD)
 {
@@ -221,6 +311,18 @@ void *threadClients(void *clientFD)
 	free(nom);
 	return NULL;
 }
+
+
+
+
+/******************************************************************
+ * 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ * 
+ * *****************************************************************/
 
 int main(int argc, char *agrv[])
 {
