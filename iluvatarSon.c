@@ -194,9 +194,9 @@ void llegirConfig(char *nomF)
 /******************************************************************
  * 
  * @Nom: connectarSocketMsg
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Finalitat: process que crea el socket per enviar un missatge a un altre usuari
+ * @Parametres: int port: port del servidor, char ip: ip del usuari
+ * @Retorn: retorna el FD del socket
  * 
  * *****************************************************************/
 
@@ -231,10 +231,10 @@ int connectarSocketMsg(int port, char *ip)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: generarMissatge
+ * @Finalitat: process que genera el missatge a partir del argv
+ * @Parametres: int numParaules: numero de paraules que hi ha en el arrayComanda, char arrayComanda: array amb les paraules del missatge
+ * @Retorn: retorna un buffer amb el missatge generat
  * 
  * *****************************************************************/
 
@@ -262,10 +262,10 @@ char *generarMissatge(int numParaules, char **arrayComanda){
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: enviaMissatge
+ * @Finalitat: funcio que fa un write amb el missatge a enviar
+ * @Parametres: char *nom: nom del usuari desti, int numParaules: numero de paraules del missatge, char arrayComanda: array amb les paraules del missatge
+ * @Retorn: retorna 1 o 0 si ha anat tot correcte o no
  * 
  * *****************************************************************/
 
@@ -661,7 +661,7 @@ void llegirUsuaris(int totalUsuaris)
 
 /******************************************************************
  * 
- * @Nom:
+ * @Nom: 
  * @Finalitat:
  * @Parametres:
  * @Retorn:
@@ -706,9 +706,9 @@ int configSocketMsg()
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: esperarMissatge
+ * @Finalitat: espera un nou missatge de algún usuari
+ * @Parametres: 
  * @Retorn:
  * 
  * *****************************************************************/
@@ -741,14 +741,6 @@ void *esperarMissatges()
 
 
 
-/******************************************************************
- * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
- * 
- * *****************************************************************/
 
 int main(int argc, char **argv)
 {
