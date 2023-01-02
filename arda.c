@@ -10,8 +10,8 @@ int totalUsuaris = 0;
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
+ * @Nom: controlC
+ * @Finalitat: mostrar missatge quan es tanca el servidor
  * @Parametres:
  * @Retorn:
  * 
@@ -28,10 +28,10 @@ void controlC(void)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: llegirConfig
+ * @Finalitat: llegir la configuració dle servidor i guardarla
+ * @Parametres: Config config: struct on es guardarà la configuració
+ * @Retorn: retorna el struct amb la configuració guardada
  * 
  * *****************************************************************/
 
@@ -80,10 +80,10 @@ Config llegirConfig(Config config, char *nomF)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: configSocket
+ * @Finalitat: configurar el socket per al servidor
+ * @Parametres: Config config: struct amb la configuració del servidor
+ * @Retorn: retorna el FD amb la info
  * 
  * *****************************************************************/
 
@@ -120,9 +120,9 @@ int configSocket(Config config)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: enviarUsuaris
+ * @Finalitat: enviar al client la info dels usuaris 
+ * @Parametres: int fd: field descriptor
  * @Retorn:
  * 
  * *****************************************************************/
@@ -146,9 +146,9 @@ void enviarUsuaris(int fd)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: afegirUsuari
+ * @Finalitat: afegir usuaris al array d'usuaris
+ * @Parametres: char *nom: nom del usuari, char *ip: ip del usuari conectat, int port: port del usuari, int pid: pid del usuari, int fd: field descriptor
  * @Retorn:
  * 
  * *****************************************************************/
@@ -174,9 +174,9 @@ void afegirUsuari(char *nom, char *ip, int port, int pid, int fd)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: eliminarUsuari
+ * @Finalitat: eliminar usuari del array quan es desconecta del servidor
+ * @Parametres: int fd: field descriptor
  * @Retorn:
  * 
  * *****************************************************************/
@@ -222,10 +222,10 @@ void eliminarUsuari(int fd)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: funcions
+ * @Finalitat: funció que gestiona les peticions
+ * @Parametres: int fd: field descriptor, char option: opció seleccionada, char *nom: nom del usuari
+ * @Retorn: retorna 1 o 0 si ha anat be o no
  * 
  * *****************************************************************/
 
@@ -265,9 +265,9 @@ int funcions(int fd, char opcio, char *nom)
 
 /******************************************************************
  * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: threadClients
+ * @Finalitat: funció que es cridada per el thread del client
+ * @Parametres: void *clientFD: field descriptor del thread
  * @Retorn:
  * 
  * *****************************************************************/
@@ -312,17 +312,6 @@ void *threadClients(void *clientFD)
 	return NULL;
 }
 
-
-
-
-/******************************************************************
- * 
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
- * 
- * *****************************************************************/
 
 int main(int argc, char *agrv[])
 {

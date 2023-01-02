@@ -252,6 +252,14 @@ char *generarMissatge(int numParaules, char **arrayComanda)
 	// Falta ficar el contingut de **arrayComandes dintre de msg, sabem que el total de lletres es= tamanyLletres i el de paraules  a numParaules
 }
 
+/******************************************************************
+ *
+ * @Nom: enviarFitxer
+ * @Finalitat: Process per enviar un fitxer a un usuari
+ * @Parametres: char *fitxer: fitxer seleccionat per l'usuari, int fdClient: field descriptor del client
+ * @Retorn: retorna 1 o 0 si el process s'ha realitzat de forma correcte
+ *
+ * *****************************************************************/
 int enviarFitxer(char *fitxer, int fdClient)
 {
 	int fd;
@@ -339,10 +347,10 @@ int enviarMissatge(char *nom, int numParaules, char **arrayComanda, int tipos)
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: validarComanda
+ * @Finalitat: comproba que la comanda que introdueix l'usuari sigui la correcte
+ * @Parametres: int numParaules: el numero de paraules de la comanda, char **arrayComanda: un array amb la comanda que ha introduit l'usuari
+ * @Retorn: retorna 1 o 0 si la comanda existeix o no
  *
  * *****************************************************************/
 
@@ -400,10 +408,10 @@ int validarComanda(int numParaules, char **arrayComanda)
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
+ * @Nom: gestionarComanda
+ * @Finalitat: realitzar la funcionalitat de la comanda que l'usuari ha triat
  * @Parametres:
- * @Retorn:
+ * @Retorn: retorna 1 0 0 si el proces s'ha realitzat de forma correcte
  *
  * *****************************************************************/
 
@@ -533,10 +541,10 @@ int gestionarComanda()
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
+ * @Nom: connectarServidor
+ * @Finalitat: crear un socket que conectar el iluvatarSon amb el servidor Arda
  * @Parametres:
- * @Retorn:
+ * @Retorn: retorna el socketFD
  *
  * *****************************************************************/
 
@@ -570,10 +578,10 @@ int connectarServidor()
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
- * @Parametres:
- * @Retorn:
+ * @Nom: llistarUsuaris
+ * @Finalitat: mostar la llista de usuaris que hi han conectats al servidor 
+ * @Parametres: 
+ * @Retorn: 
  *
  * *****************************************************************/
 
@@ -596,9 +604,9 @@ void llistarUsuaris()
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: enviarInfo
+ * @Finalitat: enviar la info al field descriptor del socket
+ * @Parametres: Config config: struct amb la info de la configuració
  * @Retorn:
  *
  * *****************************************************************/
@@ -619,9 +627,9 @@ void enviarInfo(Config config)
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
- * @Parametres:
+ * @Nom: llegirUsuaris
+ * @Finalitat: llegir del servidor el numero de usuaris que hi ha conectats
+ * @Parametres: int totalUsuaris: numero d'usuaris
  * @Retorn:
  *
  * *****************************************************************/
@@ -658,8 +666,8 @@ void llegirUsuaris(int totalUsuaris)
 
 /******************************************************************
  *
- * @Nom:
- * @Finalitat:
+ * @Nom: configSocketMsg
+ * @Finalitat: configurar socket amb la info del usuari
  * @Parametres:
  * @Retorn:
  *
@@ -725,7 +733,7 @@ void *esperarMissatges()
 		asprintf(&buffer, "\n\nNew message recived!\n%s, from %s says:\n%s\n\n$", nom, ip, msg);
 		escriure(buffer);
 		free(buffer);
-		free(nom);
+		free(nom); 
 		free(ip);
 		free(msg);
 	}
