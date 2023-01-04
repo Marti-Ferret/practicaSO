@@ -224,11 +224,10 @@ int connectarSocketMsg(int port, char *ip)
 void actualitzarUsuaris(char *data)
 {
 	int i = 0;
-	char *buffer;
-	char *nom, *ip;
-	char aux;
-	int port, pid;
-	char *token1;
+	// char *buffer;
+	//  char *nom, *ip;
+	//  char aux;
+	//  int port, pid;
 
 	while (data[i] != '\0')
 	{
@@ -239,26 +238,21 @@ void actualitzarUsuaris(char *data)
 		i++;
 	}
 
-	escriure(data);
-
-	asprintf(&buffer, "---%d-num--", totalUsuaris);
-	escriure(buffer);
-	free(buffer);
-
 	usuaris = (Usuaris *)malloc(sizeof(Usuaris) * totalUsuaris);
 
-	for (int k = 0; k < totalUsuaris; k++)
+	for (int i = 0; i < totalUsuaris; i++)
 	{
-		while (data[i] != '&')
-		{
-		}
+		/* code */
 	}
 
-	for (int m = 0; m < totalUsuaris; m++)
-	{
-		escriure("\n----");
-		escriure(usuaris[m].nom);
-	}
+	/*
+		for (int m = 0; m < totalUsuaris; m++)
+		{
+			asprintf(&buffer, "\n---%s---%s---%d---%d--\n", usuaris[m].nom, usuaris[m].ip, usuaris[m].port, usuaris[m].pid);
+			escriure(buffer);
+			free(buffer);
+		}
+		*/
 }
 
 /******************************************************************
@@ -897,6 +891,16 @@ int main(int argc, char **argv)
 		signal(SIGINT, (void *)controlC);
 
 		fdSocket = connectarServidor();
+
+		Trames tramaProva;
+
+		tramaProva.tipo = 0x01;
+		tramaProva.header = "[NEW_SON]";
+		tramaProva.data = "Hola que tal";
+		tramaProva.longitud = strlen(tramaProva.data);
+
+		enviarTrama(fdSocket, tramaProva);
+
 		enviarInfo(config);
 
 		t = tramaRebreConnexio(fdSocket);
@@ -908,6 +912,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
+			escriure(t.data);
 			actualitzarUsuaris(t.data);
 		}
 

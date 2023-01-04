@@ -303,6 +303,12 @@ void *threadClients(void *clientFD)
 	char opcio;
 	int sortir = 0;
 
+	Trames tramaProva;
+
+	tramaProva = llegirTrama(fd);
+
+	escriure(tramaProva.data);
+
 	t = tramaRebreConnexio(fd);
 
 	if (t.longitud < 0)

@@ -16,10 +16,12 @@ typedef struct
 {
     char tipo;
     char *header;
-    int longitud;
+    short longitud;
     char *data;
 
 } Trames;
 
 void tramaConectarServidor(char *name, char *ip, int port, int pid, int fd);
 Trames tramaRebreConnexio(int fd);
+void enviarTrama(int fd, Trames t);
+Trames llegirTrama(int fd);
