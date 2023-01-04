@@ -1,20 +1,17 @@
 #include "arda.h"
 #include "reads.h"
-#include <netdb.h>
+#include "trames.h"
 
 Usuaris *usuaris;
 int totalUsuaris = 0;
 
-
-
-
 /******************************************************************
- * 
- * @Nom: controlC
- * @Finalitat: mostrar missatge quan es tanca el servidor
+ *
+ * @Nom:
+ * @Finalitat:
  * @Parametres:
  * @Retorn:
- * 
+ *
  * *****************************************************************/
 
 void controlC(void)
@@ -24,15 +21,13 @@ void controlC(void)
 	raise(SIGINT);
 }
 
-
-
 /******************************************************************
- * 
- * @Nom: llegirConfig
- * @Finalitat: llegir la configuració dle servidor i guardarla
- * @Parametres: Config config: struct on es guardarà la configuració
- * @Retorn: retorna el struct amb la configuració guardada
- * 
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ *
  * *****************************************************************/
 
 Config llegirConfig(Config config, char *nomF)
@@ -76,15 +71,13 @@ Config llegirConfig(Config config, char *nomF)
 	return config;
 }
 
-
-
 /******************************************************************
- * 
- * @Nom: configSocket
- * @Finalitat: configurar el socket per al servidor
- * @Parametres: Config config: struct amb la configuració del servidor
- * @Retorn: retorna el FD amb la info
- * 
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ *
  * *****************************************************************/
 
 int configSocket(Config config)
@@ -116,15 +109,13 @@ int configSocket(Config config)
 	return listenFD;
 }
 
-
-
 /******************************************************************
- * 
- * @Nom: enviarUsuaris
- * @Finalitat: enviar al client la info dels usuaris 
- * @Parametres: int fd: field descriptor
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
- * 
+ *
  * *****************************************************************/
 
 void enviarUsuaris(int fd)
@@ -142,20 +133,17 @@ void enviarUsuaris(int fd)
 	}
 }
 
-
-
 /******************************************************************
- * 
- * @Nom: afegirUsuari
- * @Finalitat: afegir usuaris al array d'usuaris
- * @Parametres: char *nom: nom del usuari, char *ip: ip del usuari conectat, int port: port del usuari, int pid: pid del usuari, int fd: field descriptor
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
- * 
+ *
  * *****************************************************************/
 
 void afegirUsuari(char *nom, char *ip, int port, int pid, int fd)
 {
-	gethostbyname(ip);
 	escriure("Updating user's list\n");
 
 	totalUsuaris++;
@@ -170,15 +158,13 @@ void afegirUsuari(char *nom, char *ip, int port, int pid, int fd)
 	usuaris[totalUsuaris - 1].fd = fd;
 }
 
-
-
 /******************************************************************
- * 
- * @Nom: eliminarUsuari
- * @Finalitat: eliminar usuari del array quan es desconecta del servidor
- * @Parametres: int fd: field descriptor
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
- * 
+ *
  * *****************************************************************/
 
 void eliminarUsuari(int fd)
@@ -217,16 +203,13 @@ void eliminarUsuari(int fd)
 	}
 }
 
-
-
-
 /******************************************************************
- * 
- * @Nom: funcions
- * @Finalitat: funció que gestiona les peticions
- * @Parametres: int fd: field descriptor, char option: opció seleccionada, char *nom: nom del usuari
- * @Retorn: retorna 1 o 0 si ha anat be o no
- * 
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ *
  * *****************************************************************/
 
 int funcions(int fd, char opcio, char *nom)
@@ -261,57 +244,137 @@ int funcions(int fd, char opcio, char *nom)
 	return 0;
 }
 
+void enviarTramaConnexio(int fd)
+{
+	char *t;
 
+	char tipo;
+	char *header;
+	int longitud;
+	char *aux;
+	char *buffer = NULL;
+
+	tipo = 0x01;
+
+	header = strdup("[CONOK]");
+
+	for (int i = 0; i < totalUsuaris; i++)
+	{
+		asprintf(&aux, "%s&%s&%d&%d#", usuaris[i].nom, usuaris[i].ip, usuaris[i].port, usuaris[i].pid);
+
+		buffer = (char *)realloc(buffer, sizeof(char) * strlen(aux) + 2);
+		strcat(buffer, aux);
+	}
+
+	buffer[strlen(buffer) - 1] = '\0';
+
+	longitud = strlen(buffer);
+
+	asprintf(&t, "%c%s%d%s", tipo, header, longitud, buffer);
+
+	write(fd, t, strlen(t));
+
+	free(header);
+	free(aux);
+	free(t);
+	free(buffer);
+}
 
 /******************************************************************
- * 
- * @Nom: threadClients
- * @Finalitat: funció que es cridada per el thread del client
- * @Parametres: void *clientFD: field descriptor del thread
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
- * 
+ *
  * *****************************************************************/
 
 void *threadClients(void *clientFD)
 {
+	Trames t;
+	int cont = 0;
 	int fd = *((int *)clientFD);
-	char *buffer;
-	int pid, port;
 	char *nom, *ip;
+	int pid, port;
+	char *buffer;
+	char tipo;
+	char *tConnexio;
+
 	char opcio;
 	int sortir = 0;
 
-	nom = read_until(fd, '\n');
+	t = tramaRebreConnexio(fd);
 
-	ip = read_until(fd, '\n');
-
-	read(fd, &port, sizeof(int));
-
-	read(fd, &pid, sizeof(int));
-
-	asprintf(&buffer, "New Login: %s, IP: %s, port: %d, PID %d\n", nom, ip, port, pid);
-	escriure(buffer);
-	free(buffer);
-
-	afegirUsuari(nom, ip, port, pid, fd);
-	escriure("Sending user’s list\n");
-
-	write(fd, &totalUsuaris, sizeof(int));
-	enviarUsuaris(fd);
-	escriure("Response sent\n\n");
-
-	while (sortir != 1)
+	if (t.longitud < 0)
 	{
 
-		read(fd, &opcio, sizeof(char));
-		sortir = funcions(fd, opcio, nom);
-	}
+		tipo = 0x01;
 
-	free(ip);
-	free(nom);
+		asprintf(&tConnexio, "%c%s%d%s", tipo, "[CONKO]", 0, "");
+
+		write(fd, tConnexio, strlen(tConnexio));
+
+		free(tConnexio);
+	}
+	else
+	{
+
+		char *token = strtok(t.data, "&");
+
+		while (token != NULL)
+		{
+			if (cont == 0)
+			{
+				nom = strdup(token);
+			}
+			else if (cont == 1)
+			{
+				ip = strdup(token);
+			}
+			else if (cont == 2)
+			{
+				port = atoi(token);
+			}
+			else if (cont == 3)
+			{
+				pid = atoi(token);
+			}
+			cont++;
+			token = strtok(NULL, "&");
+		}
+
+		free(token);
+
+		asprintf(&buffer, "New Login: %s, IP: %s, port: %d, PID %d\n", nom, ip, port, pid);
+		escriure(buffer);
+		free(buffer);
+
+		afegirUsuari(nom, ip, port, pid, fd);
+
+		enviarTramaConnexio(fd);
+		escriure("Sending user’s list\n");
+
+		while (sortir != 1)
+		{
+
+			read(fd, &opcio, sizeof(char));
+			sortir = funcions(fd, opcio, nom);
+		}
+
+		free(ip);
+		free(nom);
+	}
 	return NULL;
 }
 
+/******************************************************************
+ *
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
+ *
+ * *****************************************************************/
 
 int main(int argc, char *agrv[])
 {

@@ -1,7 +1,7 @@
-//Define Guard
+// Define Guard
 #define _GNU_SOURCE
 
-//LLibreries del sistema
+// LLibreries del sistema
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,11 +17,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-//Define
+// Define
 #define escriure(x) write(1, x, strlen(x))
 
-
-//Tipus propis
+// Tipus propis
 typedef struct
 {
 	char *ip;

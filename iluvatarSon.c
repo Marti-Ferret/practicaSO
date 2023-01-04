@@ -1,9 +1,10 @@
 #include "iluvatarSon.h"
 #include "reads.h"
+#include "trames.h"
 
 int fdSocket;
 Usuaris *usuaris;
-int totalUsuaris = 0;
+int totalUsuaris = 1;
 Config config;
 
 void llegirUsuaris(int totalUsuaris);
@@ -220,6 +221,46 @@ int connectarSocketMsg(int port, char *ip)
 	return socketFD;
 }
 
+void actualitzarUsuaris(char *data)
+{
+	int i = 0;
+	char *buffer;
+	char *nom, *ip;
+	char aux;
+	int port, pid;
+	char *token1;
+
+	while (data[i] != '\0')
+	{
+		if (data[i] == '#')
+		{
+			totalUsuaris++;
+		}
+		i++;
+	}
+
+	escriure(data);
+
+	asprintf(&buffer, "---%d-num--", totalUsuaris);
+	escriure(buffer);
+	free(buffer);
+
+	usuaris = (Usuaris *)malloc(sizeof(Usuaris) * totalUsuaris);
+
+	for (int k = 0; k < totalUsuaris; k++)
+	{
+		while (data[i] != '&')
+		{
+		}
+	}
+
+	for (int m = 0; m < totalUsuaris; m++)
+	{
+		escriure("\n----");
+		escriure(usuaris[m].nom);
+	}
+}
+
 /******************************************************************
  *
  * @Nom: generarMissatge
@@ -252,33 +293,42 @@ char *generarMissatge(int numParaules, char **arrayComanda)
 	// Falta ficar el contingut de **arrayComandes dintre de msg, sabem que el total de lletres es= tamanyLletres i el de paraules  a numParaules
 }
 
-/******************************************************************
- *
- * @Nom: enviarFitxer
- * @Finalitat: Process per enviar un fitxer a un usuari
- * @Parametres: char *fitxer: fitxer seleccionat per l'usuari, int fdClient: field descriptor del client
- * @Retorn: retorna 1 o 0 si el process s'ha realitzat de forma correcte
- *
- * *****************************************************************/
 int enviarFitxer(char *fitxer, int fdClient)
 {
+	struct stat st;
 	int fd;
-	int llegit;
-	char *buffer = (char *)malloc(sizeof(char));
+	char *auxFitxer;
+	int tamany;
+	char *md5;
+	char *contingutFitxer;
 
-	fd = open(fitxer, O_RDONLY);
+	asprintf(&auxFitxer, "%s/%s", config.directori, fitxer);
+	fd = open(auxFitxer, O_RDONLY);
 
-	if (fd != 0)
+	if (fd < 0)
 	{
-		while ((llegit = read(fd, buffer, 1)) > 0)
-		{
-			write(fdClient, buffer, llegit);
-		}
+		escriure("El fitxer no existeix\n");
+		return 0;
+	}
+	else
+	{
+
+		// Obtenir md5
+		md5 = read_md5sum(auxFitxer);
+		escriure(md5);
+		fstat(fd, &st);
+		tamany = st.st_size;
+		write(fdClient, &tamany, sizeof(int));
+
+		contingutFitxer = read_until(fd, '\0');
+
+		write(fdClient, contingutFitxer, strlen(contingutFitxer));
+		write(fdClient, "\0", sizeof(char));
 	}
 
-	return 1;
-
+	free(contingutFitxer);
 	close(fd);
+	return 1;
 }
 
 /******************************************************************
@@ -324,6 +374,8 @@ int enviarMissatge(char *nom, int numParaules, char **arrayComanda, int tipos)
 		{
 			msg = generarMissatge(numParaules, arrayComanda);
 			fdClient = connectarSocketMsg(port, ip);
+			write(fdClient, "1", sizeof(char));
+			write(fdClient, "\n", sizeof(char));
 			write(fdClient, config.nom, strlen(config.nom));
 			write(fdClient, "\n", sizeof(char));
 			write(fdClient, config.ipC, strlen(config.ipC));
@@ -334,6 +386,11 @@ int enviarMissatge(char *nom, int numParaules, char **arrayComanda, int tipos)
 		else if (tipos == 2)
 		{
 			fdClient = connectarSocketMsg(port, ip);
+			write(fdClient, "2", sizeof(char));
+			write(fdClient, "\n", sizeof(char));
+			write(fdClient, arrayComanda[3], strlen(arrayComanda[3]));
+			write(fdClient, "\n", sizeof(char));
+
 			ok = enviarFitxer(arrayComanda[3], fdClient);
 
 			return ok;
@@ -347,10 +404,10 @@ int enviarMissatge(char *nom, int numParaules, char **arrayComanda, int tipos)
 
 /******************************************************************
  *
- * @Nom: validarComanda
- * @Finalitat: comproba que la comanda que introdueix l'usuari sigui la correcte
- * @Parametres: int numParaules: el numero de paraules de la comanda, char **arrayComanda: un array amb la comanda que ha introduit l'usuari
- * @Retorn: retorna 1 o 0 si la comanda existeix o no
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
  *
  * *****************************************************************/
 
@@ -408,10 +465,10 @@ int validarComanda(int numParaules, char **arrayComanda)
 
 /******************************************************************
  *
- * @Nom: gestionarComanda
- * @Finalitat: realitzar la funcionalitat de la comanda que l'usuari ha triat
+ * @Nom:
+ * @Finalitat:
  * @Parametres:
- * @Retorn: retorna 1 0 0 si el proces s'ha realitzat de forma correcte
+ * @Retorn:
  *
  * *****************************************************************/
 
@@ -541,10 +598,10 @@ int gestionarComanda()
 
 /******************************************************************
  *
- * @Nom: connectarServidor
- * @Finalitat: crear un socket que conectar el iluvatarSon amb el servidor Arda
+ * @Nom:
+ * @Finalitat:
  * @Parametres:
- * @Retorn: retorna el socketFD
+ * @Retorn:
  *
  * *****************************************************************/
 
@@ -578,10 +635,10 @@ int connectarServidor()
 
 /******************************************************************
  *
- * @Nom: llistarUsuaris
- * @Finalitat: mostar la llista de usuaris que hi han conectats al servidor 
- * @Parametres: 
- * @Retorn: 
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
+ * @Retorn:
  *
  * *****************************************************************/
 
@@ -604,9 +661,9 @@ void llistarUsuaris()
 
 /******************************************************************
  *
- * @Nom: enviarInfo
- * @Finalitat: enviar la info al field descriptor del socket
- * @Parametres: Config config: struct amb la info de la configuració
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
  *
  * *****************************************************************/
@@ -617,19 +674,14 @@ void enviarInfo(Config config)
 
 	pid = getpid();
 
-	write(fdSocket, config.nom, strlen(config.nom));
-	write(fdSocket, "\n", sizeof(char));
-	write(fdSocket, config.ipC, strlen(config.ipC));
-	write(fdSocket, "\n", sizeof(char));
-	write(fdSocket, &config.portC, sizeof(int));
-	write(fdSocket, &pid, sizeof(int));
+	tramaConectarServidor(config.nom, config.ipC, config.portC, pid, fdSocket);
 }
 
 /******************************************************************
  *
- * @Nom: llegirUsuaris
- * @Finalitat: llegir del servidor el numero de usuaris que hi ha conectats
- * @Parametres: int totalUsuaris: numero d'usuaris
+ * @Nom:
+ * @Finalitat:
+ * @Parametres:
  * @Retorn:
  *
  * *****************************************************************/
@@ -666,8 +718,8 @@ void llegirUsuaris(int totalUsuaris)
 
 /******************************************************************
  *
- * @Nom: configSocketMsg
- * @Finalitat: configurar socket amb la info del usuari
+ * @Nom:
+ * @Finalitat:
  * @Parametres:
  * @Retorn:
  *
@@ -725,19 +777,97 @@ void *esperarMissatges()
 	{
 		char *nom, *ip, *msg;
 		char *buffer;
+		char *aux;
+		int tipos;
+		char *auxFitxer, *tamanyFitxer;
+		int tamany;
+		char *nomF;
+		int fd;
+		char *md5;
+
 		clientFD = accept(listenFD, (struct sockaddr *)NULL, NULL);
 
-		nom = read_until(clientFD, '\n');
-		ip = read_until(clientFD, '\n');
-		msg = read_until(clientFD, '\n');
-		asprintf(&buffer, "\n\nNew message recived!\n%s, from %s says:\n%s\n\n$", nom, ip, msg);
-		escriure(buffer);
-		free(buffer);
-		free(nom); 
-		free(ip);
-		free(msg);
+		aux = read_until(clientFD, '\n');
+		tipos = atoi(aux);
+
+		if (tipos == 1)
+		{
+			nom = read_until(clientFD, '\n');
+			ip = read_until(clientFD, '\n');
+			msg = read_until(clientFD, '\n');
+			asprintf(&buffer, "\n\nNew message recived!\n%s, from %s says:\n%s\n\n$", nom, ip, msg);
+			escriure(buffer);
+			free(buffer);
+			free(nom);
+			free(ip);
+			free(msg);
+		}
+		else if (tipos == 2)
+		{
+			auxFitxer = read_until(clientFD, '\n');
+			read(clientFD, &tamany, sizeof(int));
+
+			tamanyFitxer = read_until(clientFD, '\0');
+
+			asprintf(&nomF, "%s/%s", config.directori, auxFitxer);
+
+			fd = open(nomF, O_CREAT | O_WRONLY | O_TRUNC, 0666);
+
+			if (fd < 0)
+			{
+				escriure("Error en la creació del fitxer\n");
+			}
+			else
+			{
+				escriure("Fitxer creat\n");
+				write(fd, tamanyFitxer, strlen(tamanyFitxer));
+			}
+
+			free(tamanyFitxer);
+			close(fd);
+
+			md5 = read_md5sum(nomF);
+			escriure(md5);
+			free(nomF);
+			free(auxFitxer);
+		}
+
+		free(aux);
 	}
 	return NULL;
+}
+
+Trames respostaServidor(int fd)
+{
+	Trames t;
+
+	char tipo;
+	char *header;
+	char longitud[2];
+	char *data;
+
+	char caracter = ']';
+
+	read(fd, &tipo, sizeof(char));
+	t.tipo = tipo;
+
+	header = read_until(fd, ']');
+	header = (char *)realloc(header, strlen(header) + 2);
+	header[strlen(header)] = caracter;
+	header[strlen(header) + 1] = '\0';
+	t.header = strdup(header);
+
+	read(fd, longitud, sizeof(longitud));
+	t.longitud = atoi(longitud);
+
+	data = (char *)malloc(sizeof(char) * t.longitud);
+	read(fd, data, sizeof(char) * t.longitud);
+	t.data = strdup(data);
+
+	free(data);
+	free(header);
+
+	return t;
 }
 
 int main(int argc, char **argv)
@@ -745,6 +875,7 @@ int main(int argc, char **argv)
 	pthread_t thread;
 	char *buffer;
 	int comanda = 0;
+	Trames t;
 
 	if (argc != 2)
 	{
@@ -754,6 +885,7 @@ int main(int argc, char **argv)
 	else
 	{
 		llegirConfig(argv[1]);
+
 		int resultat = pthread_create(&thread, NULL, esperarMissatges, NULL);
 
 		if (resultat != 0)
@@ -761,10 +893,24 @@ int main(int argc, char **argv)
 			escriure("Error al crear el thread\n");
 			exit(0);
 		}
+
 		signal(SIGINT, (void *)controlC);
 
 		fdSocket = connectarServidor();
 		enviarInfo(config);
+
+		t = tramaRebreConnexio(fdSocket);
+
+		if (strcasecmp(t.header, "[CONKO]") == 0)
+		{
+			escriure("Error al connectar-se al servidor\n");
+			raise(SIGINT);
+		}
+		else
+		{
+			actualitzarUsuaris(t.data);
+		}
+
 		read(fdSocket, &totalUsuaris, sizeof(int));
 		llegirUsuaris(totalUsuaris);
 
